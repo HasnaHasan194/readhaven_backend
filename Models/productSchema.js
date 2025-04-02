@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import CategoryDB from "./categorySchema.js";
 const productSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -73,5 +74,41 @@ rating: {
     
 });
 
-const ProductDB = mongoose.model('Product', productSchema);
+// Pre-save hook to calculate the salePrice based on productOffer and categoryOffer
+productSchema.pre('save', async function(next) {
+    try {
+        // Get the Category model
+        mongoose.model('Category');
+        
+        // Get the category document to access its offer
+        const categoryDoc = await CategoryDB.findById(this.Category);
+        const categoryOffer = categoryDoc ? categoryDoc.offer : 0;
+        
+        // Get the product offer
+        const productOffer = this.productOffer;
+
+        let discount = 0;
+        if (productOffer === 0 && categoryOffer === 0) {
+            discount = 0;
+        } else if (productOffer === 0) {
+            discount = categoryOffer;
+        } else if (categoryOffer === 0) {
+            discount = productOffer;
+        } else {
+            discount = Math.max(productOffer, categoryOffer);
+        }
+        
+        // Calculate the sale price
+        if (this.regularPrice) {
+            const computedSalePrice = Math.round(this.regularPrice - (this.regularPrice * discount / 100));
+            this.salePrice = Math.max(0, computedSalePrice);
+        }
+        
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
+
+const ProductDB= mongoose.model('Product', productSchema);
 export default ProductDB;

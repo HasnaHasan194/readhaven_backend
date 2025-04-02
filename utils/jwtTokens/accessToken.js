@@ -3,13 +3,13 @@ import jwt from "jsonwebtoken"
 export const generateUserAccessToken=(res,user)=>{
     const token=jwt.sign(
         {id : user._id, role :user.role},
-        process.env.ACCESS_TOKEN_SECRET,
-        {expiresIn : "15m"}
+        globalThis.process.env.ACCESS_TOKEN_SECRET,
+        {expiresIn : "20m"}
     );
     res.cookie("userAccessToken", token, {
         httpOnly: true, 
-        secure: process.env.NODE_ENV === "production", 
-        sameSite: process.env.NODE_ENV === "production" ? "None" : "strict",
+        secure: globalThis.process.env.NODE_ENV === "production", 
+        sameSite: globalThis.process.env.NODE_ENV === "production" ? "None" : "strict",
         maxAge: 15 * 60 * 1000, 
         });
 
@@ -20,14 +20,14 @@ export const generateUserAccessToken=(res,user)=>{
 export const generateAdminAccessToken=(res,user)=>{
     const token=jwt.sign(
         {id:user._id, role :user.role},
-        process.env.ACCESS_TOKEN_SECRET,
-        {expiresIn : "15m"}
+        globalThis.process.env.ACCESS_TOKEN_SECRET,
+        {expiresIn : "20m"}
     );
 
     res.cookie("adminAccessToken",token,{
         httpOnly:true,
-        secure:process.env.NODE_ENV==="production",
-        sameSite:process.env.NODE_ENV==="production" ? "None" :"strict",
+        secure:globalThis.process.env.NODE_ENV==="production",
+        sameSite:globalThis.process.env.NODE_ENV==="production" ? "None" :"strict",
         maxAge :15 * 60 * 1000, 
     });
 }

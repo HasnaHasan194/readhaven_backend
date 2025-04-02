@@ -3,19 +3,20 @@ dotenv.config();
  
 //importing nodemailer for sending email
 import nodemailer from "nodemailer";
-
+import { errorHandler } from "../Middlewares/error.js";
+import { STATUS_CODES } from "./constants.js"; 
 
 
 const transporter = nodemailer.createTransport({
     service:"gmail",
     auth:{
-        user:process.env.EMAIL_USER,
-        pass:process.env.EMAIL_PASS,
+        user:globalThis.process.env.EMAIL_USER,
+        pass:globalThis.process.env.EMAIL_PASS,
 
         
     },
 });
-export const otpSender=async(email,otp,next)=>{
+export const otpSender=async(email,otp,res, next)=>{
     
     const mailOptions={
         from:"READHAVEN",
@@ -25,14 +26,16 @@ export const otpSender=async(email,otp,next)=>{
 
     };
    
-    transporter.sendMail(mailOptions,(err,info)=>{
+    transporter.sendMail(mailOptions,(err)=>{
         if(err){
             console.log(err);
-            return next(errorHandler(500,"failed to send OTP"))
+            return next(errorHandler(STATUS_CODES. SERVER_ERROR,"failed to send OTP"))
 
         }
         
-        res.status(200).json({success:true,message:"OTP sent to your given email.please verify."});
+        res.status(STATUS_CODES.SUCCESS).json({success:true,message:"OTP sent to your given email.please verify."});
     });
 }
+
+
 

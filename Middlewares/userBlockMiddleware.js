@@ -1,4 +1,5 @@
 import usersDB from "../Models/userSchema.js";
+import { STATUS_CODES } from "../utils/constants.js";
 
 export const verifyUserBlocked = async(req, res, next) =>{
     try{
@@ -14,11 +15,13 @@ export const verifyUserBlocked = async(req, res, next) =>{
             res
             .clearCookie('userAccessToken')
             .clearCookie('userRefreshToken')
-            return res.status(403).json({message :"you are blocked ! please contact admin"})
+            return res.status(STATUS_CODES.FORBIDDEN).json({message :"you are blocked ! please contact admin"})
         }
         next()
     }
     catch(error){
-        return res.status(500).json({message :"something went wrong! please try again"});
+        console.log(error)
+        return res.status(STATUS_CODES. SERVER_ERROR).json({message :"something went wrong! please try again"});
+       
     }
 }

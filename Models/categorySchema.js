@@ -17,7 +17,11 @@ const categorySchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    
+    offer : {
+      type : Number,
+      default: 0,
+      min: [0, "Offer cannot be negative"], 
+    }   
   },
   { timestamps: true } 
 );

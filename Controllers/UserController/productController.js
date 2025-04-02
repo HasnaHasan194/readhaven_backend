@@ -1,177 +1,200 @@
+import CategoryDB from "../../Models/categorySchema.js";
 import ProductDB from "../../Models/productSchema.js";
+import { STATUS_CODES } from "../../utils/constants.js";
 
-export const getProducts = async (req,res,next) => {
-    try{
-        const products = await ProductDB.find();
-        if(!products) return res.status(404).json({message :"no products"});
+export const getProducts = async (req, res) => {
+  try {
+    const products = await ProductDB.find();
+    if (!products) return res.status(STATUS_CODES.NOT_FOUND).json({ message: "no products" });
 
-        return res.status(200).json({message:"products fetch successfully",products})
-    }
-    catch(error){
-        return res.status(500).json({message:"internal server error"})
-    }
-
-}
+    return res
+      .status(STATUS_CODES.SUCCESS)
+      .json({ message: "products fetch successfully", products });
+  } catch (error) {
+    console.log(error)
+    return res.status(STATUS_CODES. SERVER_ERROR).json({ message: "internal server error" });
+  }
+};
 
 //get a particular product
-export const getProductDetails = async(req, res) =>{
-    try{
-         const {id} = req.params;
+export const getProductDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-         const product = await ProductDB.findById(id)
-          .populate("Category", "name");
+    const product = await ProductDB.findById(id).populate("Category", "name");
 
-          if(!product) {
-            return res.status(404).json({message : "Product Not found"});
-          }
+    product.salePrice = product.regularPrice * (1 - product.productOffer / 100);
 
-          return res.status(200).json({
-            message : "Product fetched Successfully",
-            product,
-          })
+    await product.save();
+
+    if (!product) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({ message: "Product Not found" });
     }
 
-    catch(error){
-        console.error("Error fetching product details",error);
-        return res.status(500).json({message : "Internal server error"});
-    }
-}
-
+    return res.status(STATUS_CODES.SUCCESS).json({
+      message: "Product fetched Successfully",
+      product,
+    });
+  } catch (error) {
+    console.error("Error fetching product details", error);
+    return res.status(STATUS_CODES. SERVER_ERROR).json({ message: "Internal server error" });
+  }
+};
 
 //get related products
-export const getRelatedProducts = async (req, res) =>{
-    try{
-        const {category, exclude} = req.query;
-       
-        if(!category){
-           return res.status(400).json({message : "Category is required"});
-        }
+export const getRelatedProducts = async (req, res) => {
+  try {
+    const { category, exclude } = req.query;
 
-        const products = await ProductDB.find({
-            Category:category,
-            _id : {$ne: exclude}
-        })
-         .populate("Category", "name");
-     
-
-         return res.status(200).json({
-            message : "Related products fetched successfully",
-            products,
-         });
-
+    if (!category) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Category is required" });
     }
-    catch(error){
-        console.log("Error fetching related products");
-        res.status(500).json({message : "Internal server error"});
-    }
-}
+
+    const products = await ProductDB.find({
+      Category: category,
+      _id: { $ne: exclude },
+    }).populate("Category", "name");
+
+    return res.status(STATUS_CODES.SUCCESS).json({
+      message: "Related products fetched successfully",
+      products,
+    });
+  } catch (error) {
+    console.log(error)
+    console.log("Error fetching related products");
+    res.status(STATUS_CODES. SERVER_ERROR).json({ message: "Internal server error" });
+  }
+};
 
 export const getProductsForShop = async (req, res) => {
-  
-    const {
-      page = 1,
-      limit = 6, 
-      searchQuery = "",
-      category = "",
-      priceRange = "",
-      author = "",
-      language = "",
-      sortOption = "newest",
-    } = req.query;
-  
-    const pageNum = parseInt(page, 10);
-    const limitNum = parseInt(limit, 10);
-    const skip = (pageNum - 1) * limitNum;
-  
-    let query = { isBlocked: false }; 
-  
-    
-    if (searchQuery) {
-      query.$or = [
-        { name: { $regex: searchQuery, $options: "i" } },
-        { writer: { $regex: searchQuery, $options: "i" } },
-        { description: { $regex: searchQuery, $options: "i" } },
-      ];
-    }
-  
-    
-    if (category) {
-      query.Category = category;
-    }
-  
-    if (priceRange) {
-      const [min, max] = priceRange.split("-").map(Number);
-      query.regularPrice = { $gte: min, $lte: max };
-    }
-  
-    
-    if (author) {
-      query.writer = { $regex: author, $options: "i" };
-    }
-  
-    
-    if (language) {
-      query.language = language;
-    }
-  
-    
-    const sort = {};
-    switch (sortOption) {
-      case "newest":
-        sort.createdAt = -1; 
-        break;
-      case "oldest":
-        sort.publishedDate = 1; 
-        break;
-      case "price_asc":
-        sort.regularPrice = 1; 
-        break;
-      case "price_desc":
-        sort.regularPrice = -1; 
-        break;
-      case "rating_desc":
-        sort.rating = -1; 
-        break;
-      default:
-        sort.createdAt = -1; 
-    }
-  
-    
-    const products = await ProductDB.find(query)
-      .populate("Category", "name") 
-      .sort(sort)
-      .skip(skip)
-      .limit(limitNum)
-      .lean();
-      
-    const total = await ProductDB.countDocuments(query);
-    const totalPages = Math.ceil(total / limitNum);
-  
-    
-    const productsWithEffectivePrice = products.map((product) => {
-      let effectivePrice = product.regularPrice;
-      if (product.salePrice > 0) {
-        effectivePrice = product.salePrice;
-      } else if (product.productOffer > 0) {
-        effectivePrice = product.regularPrice * (1 - product.productOffer / 100);
+  const {
+    page = 1,
+    limit = 6,
+    searchQuery = "",
+    category = "",
+    priceRange = "",
+    author = "",
+    language = "",
+    sortOption = "newest",
+  } = req.query;
+
+  const pageNum = parseInt(page, 10);
+  const limitNum = parseInt(limit, 10);
+  const skip = (pageNum - 1) * limitNum;
+
+  let query = { isBlocked: false };
+
+  // Search query across multiple fields
+  if (searchQuery) {
+    query.$or = [
+      { name: { $regex: searchQuery, $options: "i" } },
+      { writer: { $regex: searchQuery, $options: "i" } },
+      { description: { $regex: searchQuery, $options: "i" } },
+    ];
+  }
+
+  // Category filter - Lookup Category by name and get ObjectId
+  if (category) {
+    try {
+      const categoryDoc = await CategoryDB.findOne({
+        name: { $regex: new RegExp(`^${category}$`, "i") }, // Case-insensitive exact match
+      });
+      if (categoryDoc) {
+        query.Category = categoryDoc._id; // Use the ObjectId
+      } else {
+        // If category doesn't exist, return no results
+        return res.status(STATUS_CODES.SUCCESS).json({
+          success: true,
+          products: [],
+          totalPages: 0,
+          currentPage: pageNum,
+          totalProducts: 0,
+        });
       }
-      return {
-        ...product,
-        effectivePrice: Number(effectivePrice.toFixed(2)), 
-      };
-    });
-
-    let currPageNum = pageNum
-    if(searchQuery || author) {
-        currPageNum = 1
+    } catch (error) {
+      console.error("Error finding category:", error);
+      return res
+        .status(STATUS_CODES. SERVER_ERROR)
+        .json({ success: false, message: "Error processing category filter" });
     }
-  
+  }
 
-    res.status(200).json({
-      success: true,
-      products: productsWithEffectivePrice,
-      totalPages,
-      currentPage: currPageNum,
-      totalProducts: total,
-    });
-}
+  // Price range filter
+  if (priceRange) {
+    const [min, max] = priceRange.split("-").map(Number);
+    query.regularPrice = { $gte: min, $lte: max };
+  }
+
+  // Author filter
+  if (author) {
+    query.writer = { $regex: author, $options: "i" };
+  }
+
+  // Language filter - Handle multiple languages
+  if (language) {
+    const languageArray = language.split(",").map((lang) => lang.trim());
+    query.language = { $in: languageArray };
+  }
+
+  // Sorting logic
+  const sort = {};
+  switch (sortOption) {
+    case "newest":
+      sort.createdAt = -1;
+      break;
+    case "oldest":
+      sort.publishedDate = 1;
+      break;
+    case "price_asc":
+      sort.regularPrice = 1;
+      break;
+    case "price_desc":
+      sort.regularPrice = -1;
+      break;
+    case "rating_desc":
+      sort.rating = -1;
+      break;
+    default:
+      sort.createdAt = -1;
+  }
+
+  // Fetch products
+  const products = await ProductDB.find(query)
+    .populate("Category", "name")
+    .sort(sort)
+    .skip(skip)
+    .limit(limitNum)
+    .lean();
+
+  const total = await ProductDB.countDocuments(query);
+  const totalPages = Math.ceil(total / limitNum);
+
+  // Calculate effective price for each product
+  // const productsWithEffectivePrice = products.map((product) => {
+  //   let effectivePrice = product.regularPrice;
+  //   if (product.regularPrice > 0) {
+  //     effectivePrice = product.regularPrice;
+  //   }
+  //   if (product.productOffer > 0) {
+  //     effectivePrice = product.regularPrice * (1 - product.productOffer / 100);
+  //   }
+  //   return {
+  //     ...product,
+  //     effectivePrice: Number(effectivePrice.toFixed(2)),
+  //   };
+  // });
+
+  // Reset page number to 1 if searchQuery or author is present
+  let currPageNum = pageNum;
+  if (searchQuery || author) {
+    currPageNum = 1;
+  }
+
+  res.status(STATUS_CODES.SUCCESS).json({
+    success: true,
+    products,
+    totalPages,
+    currentPage: currPageNum,
+    totalProducts: total,
+  });
+};
