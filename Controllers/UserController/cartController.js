@@ -10,10 +10,14 @@ export const addToCart = async (req, res, next) => {
   try {
     const userId = refreshTokenDecoder(req);
     const { productId } = req.body;
-    if (!productId) return next(errorHandler(STATUS_CODES.BAD_REQUEST, "Product  is  required"));
+    if (!productId)
+      return next(
+        errorHandler(STATUS_CODES.BAD_REQUEST, "Product  is  required")
+      );
 
     const product = await ProductDB.findById(productId);
-    if (!product) return next(errorHandler(STATUS_CODES.NOT_FOUND, "product not found"));
+    if (!product)
+      return next(errorHandler(STATUS_CODES.NOT_FOUND, "product not found"));
 
     //find the carts for the user or create a new one
     let cart = await cartDB.findOne({ userId });
@@ -33,11 +37,16 @@ export const addToCart = async (req, res, next) => {
         const newQuantity = existingProduct.quantity + 1;
         if (newQuantity > product.availableQuantity)
           return next(
-            errorHandler(STATUS_CODES.BAD_REQUEST, "cannot add more than available stock")
+            errorHandler(
+              STATUS_CODES.BAD_REQUEST,
+              "cannot add more than available stock"
+            )
           );
         existingProduct.quantity = newQuantity;
       } else {
-        return next(errorHandler(STATUS_CODES.BAD_REQUEST, "Cannot add more than 5"));
+        return next(
+          errorHandler(STATUS_CODES.BAD_REQUEST, "Cannot add more than 5")
+        );
       }
     } else {
       cart.items.push({
@@ -58,7 +67,12 @@ export const addToCart = async (req, res, next) => {
       .json({ message: "Product added to cart successfully" });
   } catch (error) {
     console.log("Error in adding to cart ", error);
-    return next(errorHandler(STATUS_CODES. SERVER_ERROR, "something went wrong . please try again"));
+    return next(
+      errorHandler(
+        STATUS_CODES.SERVER_ERROR,
+        "something went wrong . please try again"
+      )
+    );
   }
 };
 
@@ -67,26 +81,29 @@ export const getCartProducts = async (req, res, next) => {
   try {
     const userId = refreshTokenDecoder(req);
 
-    const cartProducts = await cartDB
+    let cartProducts = await cartDB
       .findOne({ userId })
       .populate("items.product");
-;
+    if (!cartProducts) {
+      cartProducts = await cartDB.create({ userId, items: [] });
+    }
 
     const response = {
       ...cartProducts.toObject(),
-    
     };
-
-    if (!cartProducts)
-      return next(errorHandler(STATUS_CODES.NOT_FOUND, "You havent added any items to the cart"));
 
     return res.status(STATUS_CODES.SUCCESS).json({
       message: "Cart products fetched successfully",
       cartProducts: response,
     });
   } catch (error) {
-    console.log(error)
-    return next(errorHandler(STATUS_CODES. SERVER_ERROR, "something went wrong ! Please try again"));
+    console.log(error);
+    return next(
+      errorHandler(
+        STATUS_CODES.SERVER_ERROR,
+        "something went wrong ! Please try again"
+      )
+    );
   }
 };
 
@@ -97,19 +114,30 @@ export const removeCartItem = async (req, res, next) => {
     const { itemId } = req.params;
 
     const cart = await cartDB.findOne({ userId });
-    if (!cart) return next(errorHandler(STATUS_CODES.NOT_FOUND, "Cart not found"));
+    if (!cart)
+      return next(errorHandler(STATUS_CODES.NOT_FOUND, "Cart not found"));
 
     //find the index of the item in the cart
     const item = cart.items.find((i) => i._id.toString() === itemId);
-    if (!item) return next(errorHandler(STATUS_CODES.NOT_FOUND, "Item not found in the cart"));
+    if (!item)
+      return next(
+        errorHandler(STATUS_CODES.NOT_FOUND, "Item not found in the cart")
+      );
 
     cart.items = cart.items.filter((i) => i._id.toString() !== itemId);
     await cart.save();
 
-    return res.status(STATUS_CODES.SUCCESS).json({ message: "Item removed from cart" });
+    return res
+      .status(STATUS_CODES.SUCCESS)
+      .json({ message: "Item removed from cart" });
   } catch (error) {
-    console.log(error)
-    return next(errorHandler(STATUS_CODES. SERVER_ERROR, "Internal server error ! Please try again"));
+    console.log(error);
+    return next(
+      errorHandler(
+        STATUS_CODES.SERVER_ERROR,
+        "Internal server error ! Please try again"
+      )
+    );
   }
 };
 //update cart items quantity
@@ -121,53 +149,89 @@ export const updateCartItemQuantity = async (req, res, next) => {
 
     //validate change is -1 or 1
     if (typeof change !== "number" || (change !== 1 && change !== -1)) {
-      return next(errorHandler(STATUS_CODES.BAD_REQUEST, "Change value must be either 1 or -1"));
+      return next(
+        errorHandler(
+          STATUS_CODES.BAD_REQUEST,
+          "Change value must be either 1 or -1"
+        )
+      );
     }
 
     const cart = await cartDB.findOne({ userId });
-    if (!cart) return next(errorHandler(STATUS_CODES.NOT_FOUND, "cart not found"));
+    if (!cart)
+      return next(errorHandler(STATUS_CODES.NOT_FOUND, "cart not found"));
 
     //find the cart items
     const item = cart.items.id(itemId);
-    if (!item) return next(errorHandler(STATUS_CODES.NOT_FOUND, "item not found in the cart"));
+    if (!item)
+      return next(
+        errorHandler(STATUS_CODES.NOT_FOUND, "item not found in the cart")
+      );
 
     const product = await ProductDB.findById(item.product);
-    if (!product) return next(errorHandler(STATUS_CODES.NOT_FOUND, "product not found"));
+    if (!product)
+      return next(errorHandler(STATUS_CODES.NOT_FOUND, "product not found"));
 
     const newQuantity = item.quantity + change;
     if (newQuantity < 1)
-      return next(errorHandler(STATUS_CODES.BAD_REQUEST, "Quantity must be atleast one"));
+      return next(
+        errorHandler(STATUS_CODES.BAD_REQUEST, "Quantity must be atleast one")
+      );
     if (newQuantity > 5)
-      return next(errorHandler(STATUS_CODES.BAD_REQUEST, "You can only buy a quantity of 5"));
+      return next(
+        errorHandler(
+          STATUS_CODES.BAD_REQUEST,
+          "You can only buy a quantity of 5"
+        )
+      );
     if (newQuantity > product.availableQuantity)
       return next(
-        errorHandler(STATUS_CODES.BAD_REQUEST, "Requested quantity exceeds available stock")
+        errorHandler(
+          STATUS_CODES.BAD_REQUEST,
+          "Requested quantity exceeds available stock"
+        )
       );
 
     //update the cart item quantity
     item.quantity = newQuantity;
     await cart.save();
-    return res.status(STATUS_CODES.SUCCESS).json({ message: "Cart item updated successfully" });
+    return res
+      .status(STATUS_CODES.SUCCESS)
+      .json({ message: "Cart item updated successfully" });
   } catch (error) {
     console.error("Error updating cart item quantity", error);
-    return next(errorHandler(STATUS_CODES. SERVER_ERROR, "Something went wrong! Please try again"));
+    return next(
+      errorHandler(
+        STATUS_CODES.SERVER_ERROR,
+        "Something went wrong! Please try again"
+      )
+    );
   }
 };
 //proceed to checkout
 export const proceedToCheckout = async (req, res, next) => {
   try {
     const userId = refreshTokenDecoder(req);
-    if (!userId) return next(errorHandler(STATUS_CODES.UNAUTHORIZED, "unauthorized"));
+    if (!userId)
+      return next(errorHandler(STATUS_CODES.UNAUTHORIZED, "unauthorized"));
 
     const cart = await cartDB.findOne({ userId }).populate("items.product");
     const wallet = await walletDB.findOne({ userId });
 
-    if (!cart) return next(errorHandler(STATUS_CODES.NOT_FOUND, "Cart not found"));
-   
-    return res.status(STATUS_CODES.SUCCESS).json({ cart, walletBalance: wallet.balance });
+    if (!cart)
+      return next(errorHandler(STATUS_CODES.NOT_FOUND, "Cart not found"));
+
+    return res
+      .status(STATUS_CODES.SUCCESS)
+      .json({ cart, walletBalance: wallet.balance });
   } catch (error) {
-    console.log(error)
-    return next(errorHandler(STATUS_CODES. SERVER_ERROR, "Something went wrong!Please try again"));
+    console.log(error);
+    return next(
+      errorHandler(
+        STATUS_CODES.SERVER_ERROR,
+        "Something went wrong!Please try again"
+      )
+    );
   }
 };
 //cart count
@@ -175,7 +239,8 @@ export const proceedToCheckout = async (req, res, next) => {
 export const getCartCountByUserId = async (req, res, next) => {
   try {
     const userId = refreshTokenDecoder(req);
-    if (!userId) return next(errorHandler(STATUS_CODES.UNAUTHORIZED, "unauthorized"));
+    if (!userId)
+      return next(errorHandler(STATUS_CODES.UNAUTHORIZED, "unauthorized"));
 
     const cart = await cartDB.findOne({ userId }).lean();
 
@@ -183,7 +248,12 @@ export const getCartCountByUserId = async (req, res, next) => {
 
     res.status(STATUS_CODES.SUCCESS).json({ success: true, count: cartCount });
   } catch (error) {
-    console.log(error)
-    return next(errorHandler(STATUS_CODES. SERVER_ERROR, "Something went wrong!Please try again"));
+    console.log(error);
+    return next(
+      errorHandler(
+        STATUS_CODES.SERVER_ERROR,
+        "Something went wrong!Please try again"
+      )
+    );
   }
 };
