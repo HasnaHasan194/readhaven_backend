@@ -283,7 +283,7 @@ export const googleAuth = async (req, res) => {
     } else {
       const [firstName, ...lastNameArray] = name.split(" ");
       const lastName = lastNameArray.join(" ") || "Doe";
-      const referralCode = generateReferralCode(firstName,lastName);
+      const referralCode = generateReferralCode(formData.firstName,formData.lastName);
 
       const newUser = new userDB({
         firstName,
