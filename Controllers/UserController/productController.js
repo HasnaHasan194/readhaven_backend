@@ -95,10 +95,14 @@ export const getProductsForShop = async (req, res) => {
 
   // Category filter - Lookup Category by name and get ObjectId
   if (category) {
+    console.log('category =>', category)
     try {
       const categoryDoc = await CategoryDB.findOne({
         name: { $regex: category, $options: "i" }, // Case-insensitive exact match
       });
+
+      console.log('categoryDoc =>', categoryDoc)
+
       if (categoryDoc) {
         query.Category = categoryDoc._id; // Use the ObjectId
       } else {
