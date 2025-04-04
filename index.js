@@ -28,16 +28,22 @@ mongoose.connect(globalThis.process.env.MONGO_URL)
 app.use('/api/users',UserRoute)
 app.use('/api/admin',AdminRoute)
 
-app.use((err,req,res)=>{
-    console.log("Error:",err.message);
-    const statusCode = err.statusCode || STATUS_CODES. SERVER_ERROR;
-    const message =err.message || "internal Server  error";
+app.use((err, req, res, next) => {
+    console.error("Error Middleware Triggered:", err.message);
+    console.log("Response Object:", res); // Debug res object
 
+    if (!res || typeof res.status !== "function") {
+        console.error("Invalid Response Object:", res);
+        return next(err); // Prevent crash
+    }
+
+    const statusCode = err.statusCode || STATUS_CODES.SERVER_ERROR;
     return res.status(statusCode).json({
-        success:false,
-        message:message,
+        success: false,
+        message: err.message || "Internal Server Error",
     });
 });
+
 
 const  PORT=globalThis.process.env.PORT
 app.listen(PORT,console.log(`running on port ${PORT}`));
