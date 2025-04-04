@@ -174,16 +174,18 @@ export const updateCartItemQuantity = async (req, res, next) => {
 
     const newQuantity = item.quantity + change;
     if (newQuantity < 1)
-      return next(
+       next(
         errorHandler(STATUS_CODES.BAD_REQUEST, "Quantity must be atleast one")
       );
+      return
     if (newQuantity > 5)
-      return next(
+       next(
         errorHandler(
           STATUS_CODES.BAD_REQUEST,
           "You can only buy a quantity of 5"
         )
       );
+      return
     if (newQuantity > product.availableQuantity)
       return next(
         errorHandler(
