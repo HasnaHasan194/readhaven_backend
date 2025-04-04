@@ -162,6 +162,7 @@ export const getProductsForShop = async (req, res) => {
       sort.createdAt = -1;
   }
 
+  console.log('this is the query ==>', JSON.stringify(query))
   // Fetch products
   const products = await ProductDB.find(query)
     .populate("Category", "name")
