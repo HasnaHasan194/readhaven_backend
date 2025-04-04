@@ -104,7 +104,7 @@ export const getProductsForShop = async (req, res) => {
       console.log('categoryDoc =>', categoryDoc)
 
       if (categoryDoc) {
-        query.Category = categoryDoc._id.toString(); // Use the ObjectId
+        query.Category = categoryDoc._id; // Use the ObjectId
       } else {
         // If category doesn't exist, return no results
         return res.status(STATUS_CODES.SUCCESS).json({

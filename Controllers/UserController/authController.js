@@ -283,6 +283,7 @@ export const googleAuth = async (req, res) => {
     } else {
       const [firstName, ...lastNameArray] = name.split(" ");
       const lastName = lastNameArray.join(" ") || "Doe";
+      const referralCode = generateReferralCode(formData.firstName,formData.lastName);
 
       const newUser = new userDB({
         firstName,
@@ -290,10 +291,16 @@ export const googleAuth = async (req, res) => {
         email,
         phone: generateUniquePhoneNumber(),
         password: generateRandomPassword(),
+        referralCode,
         role: "user",
         isBlocked: false,
       });
       const newUserDetail = await newUser.save();
+      await walletDB.create({
+        userId: newUser._id,
+        balance: 0,
+        transactions: [],
+      });
       generateUserAccessToken(res, newUserDetail);
       generateUserRefreshToken(res, newUserDetail);
       res.status(STATUS_CODES.SUCCESS).json({
