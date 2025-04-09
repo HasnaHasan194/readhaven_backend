@@ -23,7 +23,17 @@ export const createCoupon =async (req,res,next)=>{
 
         };
         const existCoupon =await CouponDB.findOne({code});
+         
         if(existCoupon) return next(errorHandler(STATUS_CODES.BAD_REQUEST, "Coupon already exist!Try generating another one"))
+        
+        if(discountType === "percentage" && discountValue > minimumPurchase){
+            return next(errorHandler(STATUS_CODES.CONFLICT,"Discount value must be less than 85%"))
+        }    
+
+        if(discountType === "amount" && discountValue >= minimumPurchase){
+            return next(errorHandler(STATUS_CODES.CONFLICT,"Discount value must be less than minimum purchase"))
+        }
+            
             const coupon =new CouponDB({
         code,
         discountType,
@@ -32,6 +42,7 @@ export const createCoupon =async (req,res,next)=>{
         expiryDate,
         description
     });
+
     await coupon.save();
     return res.status(STATUS_CODES.SUCCESS).json({
         message :"Coupon created successfully",

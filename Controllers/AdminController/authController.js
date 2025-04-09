@@ -15,6 +15,7 @@ export const verifyLogin=async (req,res)=>{
             return res.status(STATUS_CODES.NOT_FOUND).json({message : "Email doesnt exist!!"})
         }
      const isPasswordCorrect=await bcrypt.compare(password,adminExist.password);
+
      if(!isPasswordCorrect){
         return res.status(STATUS_CODES.UNAUTHORIZED).json({message : "Invalid credentials!"});
     }
@@ -27,7 +28,7 @@ export const verifyLogin=async (req,res)=>{
     console.log(error)
     return res.status(STATUS_CODES.SERVER_ERROR).json({message : "something went wrong. Please try again!"})
 }
-}
+}     
 //logout function
 export const logoutAdmin=(req,res)=>{
     res.clearCookie("adminAccessToken",{httpOnly : true ,secure: false,samSite:"Lax"});

@@ -66,7 +66,7 @@ export const blockCategory=async(req,res)=>{
         const category=await CategoryDB.findById(categoryId);
         if(!category){
             return res.status(STATUS_CODES.UNAUTHORIZED).json({message:"Category not found"});
-
+            
         }
         category.isActive=!category.isActive;
         await category.save();
@@ -81,6 +81,7 @@ export const blockCategory=async(req,res)=>{
 //Edit category
 export const editCategory=async(req,res)=>{
     try{
+
         const {id}=req.params;
         const{name,description}=req.body;
         if(!name || !description){
@@ -144,7 +145,7 @@ export const addOffer = async(req, res,next) =>{
     }
     catch(error){
         console.log("error updating offer",error);
-        return next(errorHandler(STATUS_CODES.SERVER_ERROR,"Internal server error"))
+        return next(errorHandler(STATUS_CODES.SERVER_ERROR,"Internal server error"));
     }
 }
                                                                                                             
