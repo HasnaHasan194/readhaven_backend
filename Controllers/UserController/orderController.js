@@ -73,9 +73,9 @@ export const placeOrder = async (req, res, next) => {
     const {
       paymentMethod,
       deliveryAddress,
-      subtotal,
+      // subtotal,
       tax,
-      totalAmount,
+      // totalAmount,
       paymentStatus,
       discountAmount,
       couponCode,
@@ -99,6 +99,21 @@ export const placeOrder = async (req, res, next) => {
         return next(errorHandler(STATUS_CODES.BAD_REQUEST, "You have already used this coupon"));
       }
     }
+
+    let subtotal = 0;
+    for (const item of items) {
+      // Fetch the product details from the Product collection using the product ID
+      const product = await ProductDB.findById(item.product).select("salePrice");
+      if (!product) {
+        return res.status(400).json({ message: `Product with ID ${item.product} not found` });
+      }
+
+      // Calculate subtotal as salePrice * quantity for each item and sum them
+      subtotal += product.salePrice * item.quantity;
+    }
+
+    // Step 2: Calculate totalAmount (subtotal + tax - discountAmount, if applicable)
+    const totalAmount = subtotal + tax - (discountAmount || 0);
 
     const newOrderDetails = {
       userId,
