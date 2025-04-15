@@ -1,5 +1,6 @@
 import { errorHandler } from "../../Middlewares/error.js";
 import CouponDB from "../../Models/couponSchema.js";
+import orderDB from "../../Models/orderSchema.js";
 import { STATUS_CODES } from "../../utils/constants.js";
 
 //to fetch the coupons 
@@ -63,9 +64,15 @@ export const blockCoupon = async (req, res, next) => {
 
         const coupon = await CouponDB.findOne({_id : id});
         if(!coupon) return next(errorHandler(STATUS_CODES.NOT_FOUND,"No coupon found"));
+    
 
-        coupon.isActive = !coupon.isActive;
-        await coupon.save();
+    
+
+        // coupon.isActive = !coupon.isActive;
+        // if(!coupon.isActive){
+        //      await orderDB.findOne({couponCode :coupon.code});
+        // }
+        // await coupon.save();
 
         return res.status(STATUS_CODES.SUCCESS).json({message :`Updated the status`});
     }

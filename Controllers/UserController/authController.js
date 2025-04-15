@@ -94,6 +94,7 @@ export const verifyOTPAndCreateUser = async (req, res) => {
   try {
     // Find the OTP record for the given email
     const otpRecord = await otpDB.findOne({ email });
+    
 
     if (!otpRecord || otpRecord.otp !== otp.toString().trim()) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Invalid OTP" }); // Return error for invalid OTP
@@ -125,6 +126,12 @@ export const verifyOTPAndCreateUser = async (req, res) => {
   }
 
     
+// const userId =await userDB.findOne({email})
+// if(!email){
+//     return res.status(400).json({message:"email NOT exists"})
+// }else{
+//   userId.isActive=!userId.isActive
+// }
 
     const newUser = new userDB({
       firstName: formData.firstName,

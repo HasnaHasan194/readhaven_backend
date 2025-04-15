@@ -182,7 +182,7 @@ export const updateRefundStatus = async (req, res, next) => {
     const refundAmount = Math.round(
       item.productPrice * item.quantity * (1 - effectiveDiscountRate)
     );
-
+  
     item.refundStatus = newRefundStatus;
     item.refundAmount = refundAmount;
     await order.save();

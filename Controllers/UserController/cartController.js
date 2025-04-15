@@ -5,6 +5,8 @@ import { errorHandler } from "../../Middlewares/error.js";
 import wishListDB from "../../Models/wishListSchema.js";
 import walletDB from "../../Models/walletSchema.js";
 import { STATUS_CODES } from "../../utils/constants.js";
+
+
 // to add items to the cart
 export const addToCart = async (req, res, next) => {
   try {
@@ -19,7 +21,20 @@ export const addToCart = async (req, res, next) => {
     if (!product)
       return next(errorHandler(STATUS_CODES.NOT_FOUND, "product not found"));
 
+  // if(product.productOffer ===0 && product.availableQuantity<10){
+  //   product.isBlocked=!product.isBlocked
+  // }
+  // // await product.save()
+  // const cart.items= cart.items.filter((i)=>i._id.toString() !== productId)
+  // const wishlist =await wishListDB.findOne({user:userId})
+  //  wishlist.products=wishlist.products.filter((i)=>i._id.toString()!==productId)
+  //  await wishlist.save();
+  
     //find the carts for the user or create a new one
+   
+
+
+    const remove=await cartDB.deleteOne({})
     let cart = await cartDB.findOne({ userId });
     if (!cart) {
       cart = new cartDB({
@@ -30,6 +45,7 @@ export const addToCart = async (req, res, next) => {
     const existingProduct = cart?.items?.find(
       (item) => item.product.toString() === productId
     );
+    
 
     if (existingProduct) {
       if (existingProduct.quantity < 5) {
@@ -106,6 +122,7 @@ export const getCartProducts = async (req, res, next) => {
     );
   }
 };
+
 
 // remove cart item
 export const removeCartItem = async (req, res, next) => {

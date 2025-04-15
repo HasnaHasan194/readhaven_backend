@@ -31,7 +31,10 @@ export const blockUser=async(req,res)=>{
         const user=await userDB.findById(userId);
         if(!user){
             return res.send(STATUS_CODES.NOT_FOUND).json({message:"User not found"});
+
 }
+
+
    user.isBlocked=!user.isBlocked;
     await user.save();
     res.status(STATUS_CODES.SUCCESS).json({message : `User has been ${user.isBlocked ? "blocked" : "unblocked"}`});

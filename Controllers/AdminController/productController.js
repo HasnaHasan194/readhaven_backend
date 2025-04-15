@@ -113,8 +113,11 @@ export const addProduct = async (req, res) => {
             availableQuantity,
             productImages,
         });
-
+    
         const savedProduct = await newProduct.save();
+        // if(product.productOffer>70){
+        //     await ProductDB.deleteMany({productOffer :{$lt:{50}}})
+        // }
 
         return res.status(STATUS_CODES.SUCCESS).json({
             message: "Product added successfully",
@@ -213,7 +216,7 @@ export const editProduct = async (req, res) => {
             return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Available quantity must be a non-negative integer" });
         }
 
-        if (productOffer !== undefined && (typeof productOffer !== 'number' || productOffer < 0)) {
+        if (productOffer !== undefined && (typeof productOffer !== 'number' || productOffer < 0)) {  
             return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Product offer must be a non-negative number" });
         }
 
@@ -264,6 +267,7 @@ export const blockProduct = async(req, res) =>{
         }
 
         product.isBlocked = !product.isBlocked;
+        
 
         await product.save();
 

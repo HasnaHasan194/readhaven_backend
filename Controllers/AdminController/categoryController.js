@@ -83,7 +83,9 @@ export const editCategory=async(req,res)=>{
     try{
 
         const {id}=req.params;
+        console.log(req.params)
         const{name,description}=req.body;
+        console.log(req.body)
         if(!name || !description){
             return res.status(STATUS_CODES.BAD_REQUEST).json({message:"Name and description are required "});
  }
@@ -91,18 +93,24 @@ export const editCategory=async(req,res)=>{
         if (!nameRegex.test(name)) {
             return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Category name must contain only alphabets and spaces" });
         }
-        const existingCategory=await CategoryDB.findOne({ 
-            name: { $regex: new RegExp(`^${name.trim()}$`, "i") } 
+        const existingCategory = await CategoryDB.findOne({ 
+            name: { $regex: new RegExp(`^${name.trim()}$`, "i") },
+            _id: { $ne: id } 
         });
+
         if(existingCategory){
-            return res.status(STATUS_CODES.BAD_REQUEST).json({message :"category already exists"})
-        }
+            return res.status(STATUS_CODES.CONFLICT).json({message:"Category already exists."})
+        } 
+
         const updateCategory = await CategoryDB.findByIdAndUpdate(
             id,
-            { name, description }, 
-            { new: true } 
-            );
-
+            { name, 
+                description} 
+              );
+            
+            if(updateCategory){
+                return res.status(STATUS_CODES.SUCCESS).json({message:"updated the category"})
+            }   
             if(!updateCategory){
             return res.status(STATUS_CODES.NOT_FOUND).json({message : "Category Not found"})
             }
