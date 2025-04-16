@@ -176,7 +176,38 @@ export const addOffer = async (req, res, next) => {
       { new: true }
     );
 
-    await ProductDB.updateMany({ Category: id }, { updatedAt: Date.now() });
+    const productsToUpdate = await ProductDB.find({ Category: id });
+
+    for (const product of productsToUpdate) {
+      const productOffer = product.productOffer;
+      const categoryOffer = Number(offer);
+
+      // Determine the best discount to apply
+      let discount = 0;
+      if (productOffer === 0 && categoryOffer === 0) {
+        discount = 0;
+      } else if (productOffer === 0) {
+        discount = categoryOffer;
+      } else if (categoryOffer === 0) {
+        discount = productOffer;
+      } else {
+        discount = Math.max(productOffer, categoryOffer);
+      }
+
+      // Calculate the new sale price
+      const computedSalePrice = Math.round(
+        product.regularPrice - (product.regularPrice * discount) / 100
+      );
+
+      // Update the product
+      await ProductDB.updateOne(
+        { _id: product._id },
+        {
+          salePrice: Math.max(0, computedSalePrice),
+          updatedAt: Date.now(),
+        }
+      );
+    }
 
     return res.status(STATUS_CODES.SUCCESS).json({
       message: "Offer updated successfully",
