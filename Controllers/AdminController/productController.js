@@ -278,6 +278,8 @@ export const editProduct = async (req, res) => {
         .json({ message: "Product images must be an array" });
     }
 
+    const category = await CategoryDB.findById(Category)
+
     // Update product details
     const updatedProduct = await ProductDB.findByIdAndUpdate(
       id,
@@ -289,7 +291,7 @@ export const editProduct = async (req, res) => {
           Category,
           language,
           regularPrice,
-          salePrice: regularPrice - (regularPrice * productOffer) / 100,
+          salePrice: regularPrice - (regularPrice * Math.max(productOffer, category.offer)) / 100,
           productOffer,
           description,
           availableQuantity,
