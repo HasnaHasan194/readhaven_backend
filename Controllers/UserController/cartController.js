@@ -29,12 +29,8 @@ export const addToCart = async (req, res, next) => {
   // const wishlist =await wishListDB.findOne({user:userId})
   //  wishlist.products=wishlist.products.filter((i)=>i._id.toString()!==productId)
   //  await wishlist.save();
-  
+  // const remove=await cartDB.deleteOne({})
     //find the carts for the user or create a new one
-   
-
-
-    const remove=await cartDB.deleteOne({})
     let cart = await cartDB.findOne({ userId });
     if (!cart) {
       cart = new cartDB({

@@ -128,8 +128,7 @@ export const editCategory=async(req,res)=>{
 
 
 //add offer
-
-export const addOffer = async(req, res,next) =>{
+export const addOffer = async(req, res, next) =>{
     try{
         const {id} = req.params;
         const {offer}= req.body;
