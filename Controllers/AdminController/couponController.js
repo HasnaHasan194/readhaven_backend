@@ -23,16 +23,19 @@ export const createCoupon =async (req,res,next)=>{
             return next(errorHandler(STATUS_CODES.BAD_REQUEST,"Missing required fields"));
 
         };
+        
+
+
         const existCoupon =await CouponDB.findOne({code});
          
         if(existCoupon) return next(errorHandler(STATUS_CODES.BAD_REQUEST, "Coupon already exist!Try generating another one"))
         
-        if(discountType === "percentage" && discountValue > minimumPurchase){
-            return next(errorHandler(STATUS_CODES.CONFLICT,"Discount value must be less than 85%"))
+        if(discountType === "percentage" && (discountValue > 85 || discountValue <=0)){
+            return next(errorHandler(STATUS_CODES.CONFLICT,"Discount value must be greater than 0 and less than 85%"))
         }    
 
-        if(discountType === "amount" && discountValue >= minimumPurchase){
-            return next(errorHandler(STATUS_CODES.CONFLICT,"Discount value must be less than minimum purchase"))
+        if(discountType === "amount" && (discountValue >= minimumPurchase || discountValue<=0)){
+            return next(errorHandler(STATUS_CODES.CONFLICT,"Discount value must be greater than 0 and  less than minimum purchase"))
         }
             
             const coupon =new CouponDB({

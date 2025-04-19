@@ -126,7 +126,7 @@ export const getProductsForShop = async (req, res) => {
   // Price range filter
   if (priceRange) {
     const [min, max] = priceRange.split("-").map(Number);
-    query.regularPrice = { $gte: min, $lte: max };
+    query.salePrice = { $gte: min, $lte: max };
   }
 
   // Author filter

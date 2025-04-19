@@ -88,6 +88,7 @@ export const addToCart = async (req, res, next) => {
   }
 };
 
+
 //to get the cart items
 export const getCartProducts = async (req, res, next) => {
   try {

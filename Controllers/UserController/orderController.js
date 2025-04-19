@@ -73,9 +73,7 @@ export const placeOrder = async (req, res, next) => {
     const {
       paymentMethod,
       deliveryAddress,
-      // subtotal,
       tax,
-      // totalAmount,
       paymentStatus,
       discountAmount,
       couponCode,
@@ -112,7 +110,7 @@ export const placeOrder = async (req, res, next) => {
       subtotal += product.salePrice * item.quantity;
     }
 
-    // Step 2: Calculate totalAmount (subtotal + tax - discountAmount, if applicable)
+    // Step 2 Calculate totalAmount (subtotal + tax - discountAmount, if applicable)
     const totalAmount = subtotal + tax - (discountAmount || 0);
 
     const newOrderDetails = {
@@ -227,44 +225,45 @@ export const getOrderByItemId = async (req, res, next) => {
 };
 
 //to cancel an order
-export const cancelOrder = async (req, res, next) => {
-  try {
-    const userId = refreshTokenDecoder(req);
-    const { orderId } = req.params;
-    const order = await orderDB.findOne({ orderId, userId });
-    if (!order) return next(errorHandler(STATUS_CODES.NOT_FOUND, "Order not found"));
+// export const cancelOrder = async (req, res, next) => {
+//   try {
+//     const userId = refreshTokenDecoder(req);
+//     const { orderId } = req.params;
+//     const order = await orderDB.findOne({ orderId, userId });
+//     if (!order) return next(errorHandler(STATUS_CODES.NOT_FOUND, "Order not found"));
 
-    if (order.status !== "Pending" && order.status !== "Processing")
-      return errorHandler(STATUS_CODES.BAD_REQUEST, "Order cannot be cancelled at this stage");
+//     if (order.status !== "Pending" && order.status !== "Processing")
+//       return errorHandler(STATUS_CODES.BAD_REQUEST, "Order cannot be cancelled at this stage");
 
-    order.status = "Cancelled";
+//     order.status = "Cancelled";
 
-    //to update the status of each item in the order to cancelled
-    order.items.forEach((item) => {
-      item.status = "Cancelled";
-    });
+//     //to update the status of each item in the order to cancelled
+//     order.items.forEach((item) => {
+//       item.status = "Cancelled";
+//     });
 
-    //to update the refund status of each item in the order to pending
-    order.items.forEach((item) => {
-      item.refundStatus = "Pending";
-    });
+//     //to update the refund status of each item in the order to pending
+//     order.items.forEach((item) => {
+//       item.refundStatus = "Pending";
+//     });
 
-    await order.save();
+//     await order.save();
 
-    const updateTasks = order.items.map((item) => {
-      const productId = item.product._id;
+//     const updateTasks = order.items.map((item) => {
+//       const productId = item.product._id;
 
-      return ProductDB.updateOne({ _id: productId });
-    });
+//       return ProductDB.updateOne({ _id: productId });
+//     });
 
-    await Promise.all(updateTasks);
+//     await Promise.all(updateTasks);
 
-    res.status(STATUS_CODES.SUCCESS).json({ message: "Order Cancelled Successfully", order });
-  } catch (error) {
-    console.log(error);
-    return next(errorHandler(STATUS_CODES. SERVER_ERROR, "Something went wrong! Please try again"));
-  }
-};
+//     res.status(STATUS_CODES.SUCCESS).json({ message: "Order Cancelled Successfully", order });
+//   } catch (error) {
+//     console.log(error);
+//     return next(errorHandler(STATUS_CODES. SERVER_ERROR, "Something went wrong! Please try again"));
+//   }
+// };
+
 // to cancel a single order
 
 export const cancelSingleItem = async (req, res, next) => {

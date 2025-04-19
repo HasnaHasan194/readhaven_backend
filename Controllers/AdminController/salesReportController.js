@@ -66,55 +66,6 @@ const dateRangeCalculator = (dateRange, from, to) => {
   return { startDate, endDate };
 };
 
-// const dateRangeCalculator = (dateRange, from, to) => {
-//   const today = new Date();
-//   let startDate, endDate;
-
-//   switch (dateRange) {
-//     case "today": {
-//       startDate = startOfDay(today);
-//       endDate = endOfDay(today);
-//       break;
-//     }
-//     case "week": {
-//       startDate = startOfWeek(today);
-//       endDate = endOfWeek(today);
-//       break;
-//     }
-//     case "month": {
-//       startDate = startOfMonth(today);
-//       endDate = endOfMonth(today);
-//       break;
-//     }
-//     case "year": {
-//       startDate = startOfYear(today);
-//       endDate = endOfYear(today);
-//       break;
-//     }
-//     case "custom": {
-//       const fromDate = new Date(from);
-//       const toDate = new Date(to);
-
-//       if (isNaN(fromDate) || isNaN(toDate)) {
-//         startDate = null;
-//         endDate = null;
-//       } else if (fromDate.getTime() === toDate.getTime()) {
-//         startDate = startOfDay(fromDate);
-//         endDate = endOfDay(fromDate);
-//       } else {
-//         startDate = startOfDay(fromDate);
-//         endDate = endOfDay(toDate);
-//       }
-//       break;
-//     }
-//     default: {
-//       startDate = null;
-//       endDate = null;
-//     }
-//   }
-
-//   return { startDate, endDate };
-// };
 
 const getSalesReport = async (req, res) => {
   try {
