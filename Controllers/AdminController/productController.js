@@ -279,6 +279,7 @@ export const editProduct = async (req, res) => {
     }
 
     const category = await CategoryDB.findById(Category)
+  
 
     // Update product details
     const updatedProduct = await ProductDB.findByIdAndUpdate(
