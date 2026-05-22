@@ -232,7 +232,7 @@ export const verifyLogin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const userExist = await userDB.findOne({ email });
+    const userExist = await userDB.findOne({ email, role: "user" });
     if (!userExist)
       return res.status(STATUS_CODES.NOT_FOUND).json({ message: `User doesn't exist !` });
     if (userExist.isBlocked)
@@ -282,6 +282,11 @@ export const googleAuth = async (req, res) => {
   try {
     const userExists = await userDB.findOne({ email });
     if (userExists) {
+      if (userExists.role !== "user") {
+        return res.status(STATUS_CODES.FORBIDDEN).json({
+          message: "Please use the admin portal to sign in.",
+        });
+      }
       generateUserAccessToken(res, userExists);
       generateUserRefreshToken(res, userExists);
       return res

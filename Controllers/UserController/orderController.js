@@ -278,9 +278,9 @@ export const cancelSingleItem = async (req, res, next) => {
     if (item.status !== "Pending" && item.status !== "Processing")
       return next(errorHandler(STATUS_CODES.BAD_REQUEST, "order cannot be cancelled at this stage"));
     item.status = "Cancelled";
-    
 
-    //calculate the refund Amount
+    const isPaid = order.paymentStatus?.toLowerCase() === "paid";
+
     const discountAmountDerived =
       order.subtotal + order.tax - order.totalAmount;
     const effectiveDiscountRate = order.subtotal
@@ -290,31 +290,38 @@ export const cancelSingleItem = async (req, res, next) => {
       item.productPrice * item.quantity * (1 - effectiveDiscountRate)
     );
 
-    item.refundStatus = "Approved";
-    item.refundAmount = refundAmount;
+    if (isPaid) {
+      item.refundStatus = "Approved";
+      item.refundAmount = refundAmount;
+    } else {
+      item.refundStatus = "None";
+      item.refundAmount = 0;
+    }
+
     await order.save();
 
-     //to update the wallet
-     const walletUpdate = await walletDB.updateOne(
-          { userId: order.userId },
-          {
-            $push: {
-              transactions: {
-                description: `Refund for order ${order.orderId}`,
-                transactionDate: new Date(),
-                transactionType: "Credit",
-                transactionStatus: "Success",
-                amount: refundAmount,
-              },
+    if (isPaid && refundAmount > 0) {
+      const walletUpdate = await walletDB.updateOne(
+        { userId: order.userId },
+        {
+          $push: {
+            transactions: {
+              description: `Refund for order ${order.orderId}`,
+              transactionDate: new Date(),
+              transactionType: "Credit",
+              transactionStatus: "Success",
+              amount: refundAmount,
             },
-            $inc: { balance: refundAmount },
           },
-          { upsert: true }
-        );
-    
-        if (walletUpdate.modifiedCount === 0 && walletUpdate.upsertedCount === 0) {
-          return next(errorHandler(STATUS_CODES.NOT_FOUND, "Wallet not found"));
-        }
+          $inc: { balance: refundAmount },
+        },
+        { upsert: true }
+      );
+
+      if (walletUpdate.modifiedCount === 0 && walletUpdate.upsertedCount === 0) {
+        return next(errorHandler(STATUS_CODES.NOT_FOUND, "Wallet not found"));
+      }
+    }
 
     const productId = item.product;
     const quantityToRevert = item.quantity;
@@ -324,7 +331,13 @@ export const cancelSingleItem = async (req, res, next) => {
         $inc: { availableQuantity: quantityToRevert },
       }
     );
-    return res.status(STATUS_CODES.SUCCESS).json({ message: "Ordered  item is cancelled and amount is refunded to your wallet" });
+
+    const message =
+      isPaid && refundAmount > 0
+        ? "Ordered  item is cancelled and amount is refunded to your wallet"
+        : "Order item cancelled successfully";
+
+    return res.status(STATUS_CODES.SUCCESS).json({ message });
   } catch (error) {
     console.log("Error in cancelling the item", error);
     return next(errorHandler(STATUS_CODES. SERVER_ERROR, "Something went wrong!Please try again"));
