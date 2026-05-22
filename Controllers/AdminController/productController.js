@@ -282,23 +282,30 @@ export const editProduct = async (req, res) => {
   
 
     // Update product details
+    const updateFields = {
+      name,
+      publishedDate,
+      writer,
+      Category,
+      language,
+      regularPrice,
+      salePrice:
+        regularPrice -
+        (regularPrice * Math.max(productOffer, category.offer)) / 100,
+      productOffer,
+      description,
+      availableQuantity,
+      productImages,
+    };
+
+    if (availableQuantity !== undefined) {
+      updateFields.status =
+        availableQuantity > 0 ? "Available" : "Out of Stock";
+    }
+
     const updatedProduct = await ProductDB.findByIdAndUpdate(
       id,
-      {
-        $set: {
-          name,
-          publishedDate,
-          writer,
-          Category,
-          language,
-          regularPrice,
-          salePrice: regularPrice - (regularPrice * Math.max(productOffer, category.offer)) / 100,
-          productOffer,
-          description,
-          availableQuantity,
-          productImages,
-        },
-      },
+      { $set: updateFields },
       { new: true, runValidators: true }
     );
 

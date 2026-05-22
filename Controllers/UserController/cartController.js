@@ -21,6 +21,18 @@ export const addToCart = async (req, res, next) => {
     if (!product)
       return next(errorHandler(STATUS_CODES.NOT_FOUND, "product not found"));
 
+    if (product.isBlocked) {
+      return next(
+        errorHandler(STATUS_CODES.BAD_REQUEST, "This product is unavailable")
+      );
+    }
+
+    if (product.availableQuantity < 1) {
+      return next(
+        errorHandler(STATUS_CODES.BAD_REQUEST, "This product is out of stock")
+      );
+    }
+
   // if(product.productOffer ===0 && product.availableQuantity<10){
   //   product.isBlocked=!product.isBlocked
   // }

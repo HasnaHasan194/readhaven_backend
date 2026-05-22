@@ -146,7 +146,7 @@ export const placeOrder = async (req, res, next) => {
       updateTask.push(
         ProductDB.updateOne(
           { _id: productId },
-          { $inc: { "product.availableQuantity": -quantityPurchased } },
+          { $inc: { availableQuantity: -quantityPurchased } },
           { runValidators: true }
         )
       );
