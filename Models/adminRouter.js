@@ -10,7 +10,7 @@ import { addCategory,addOffer,blockCategory,editCategory,getCategory } from "../
 import { addProduct, blockProduct, editProduct, getCategoryDropDown, getProductEdit, getProducts } from "../Controllers/AdminController/productController.js";
 import { getAllOrders, updateRefundStatus, updateSingleOrderItemStatus } from "../Controllers/AdminController/orderController.js";
 import { getOrderById } from "../Controllers/UserController/orderController.js";
-import { blockCoupon, createCoupon, editCoupon, getCouponById, getCoupons } from "../Controllers/AdminController/couponController.js";
+import { blockCoupon, createCoupon, getCoupons } from "../Controllers/AdminController/couponController.js";
 import getSalesReport, { downloadSalesReportExcel, downloadSalesReportPDF, getSalesAnalytics } from "../Controllers/AdminController/salesReportController.js";
 import { getWalletTransactions } from "../Controllers/AdminController/walletController.js";
 
@@ -46,9 +46,7 @@ import { getWalletTransactions } from "../Controllers/AdminController/walletCont
 
  //coupon 
  router.get('/coupon',verifyAdmin,getCoupons)//to get the coupons
- router.get('/coupon/:id',verifyAdmin,getCouponById)//to get single coupon by id
  router.post('/coupon',verifyAdmin,createCoupon)//to add the coupon
- router.put('/coupon/edit/:id',verifyAdmin,editCoupon)//to edit the coupon
  router.put('/coupon/:id',verifyAdmin,blockCoupon)// to block or unblock the coupon
  
  //sales report

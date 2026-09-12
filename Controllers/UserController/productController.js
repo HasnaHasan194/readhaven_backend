@@ -174,21 +174,6 @@ export const getProductsForShop = async (req, res) => {
   const total = await ProductDB.countDocuments(query);
   const totalPages = Math.ceil(total / limitNum);
 
-  // Calculate effective price for each product
-  // const productsWithEffectivePrice = products.map((product) => {
-  //   let effectivePrice = product.regularPrice;
-  //   if (product.regularPrice > 0) {
-  //     effectivePrice = product.regularPrice;
-  //   }
-  //   if (product.productOffer > 0) {
-  //     effectivePrice = product.regularPrice * (1 - product.productOffer / 100);
-  //   }
-  //   return {
-  //     ...product,
-  //     effectivePrice: Number(effectivePrice.toFixed(2)),
-  //   };
-  // });
-
   // Reset page number to 1 if searchQuery or author is present
   let currPageNum = pageNum;
   if (searchQuery || author) {

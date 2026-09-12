@@ -88,11 +88,11 @@ export const addProduct = async (req, res) => {
 
     if (
       productOffer !== undefined &&
-      (typeof productOffer !== "number" || productOffer < 0)
+      (typeof productOffer !== "number" || productOffer < 0 || productOffer >= 80)
     ) {
       return res
         .status(STATUS_CODES.BAD_REQUEST)
-        .json({ message: "Product offer must be a non-negative number" });
+        .json({ message: "Product offer must be a non-negative number and less than 80%" });
     }
 
     const isValidCategory = await CategoryDB.findById(Category);
@@ -265,11 +265,11 @@ export const editProduct = async (req, res) => {
 
     if (
       productOffer !== undefined &&
-      (typeof productOffer !== "number" || productOffer < 0)
+      (typeof productOffer !== "number" || productOffer < 0 || productOffer >= 80)
     ) {
       return res
         .status(STATUS_CODES.BAD_REQUEST)
-        .json({ message: "Product offer must be a non-negative number" });
+        .json({ message: "Product offer must be a non-negative number and less than 80%" });
     }
 
     if (productImages && !Array.isArray(productImages)) {
@@ -279,6 +279,7 @@ export const editProduct = async (req, res) => {
     }
 
     const category = await CategoryDB.findById(Category)
+  
 
     // Update product details
     const updatedProduct = await ProductDB.findByIdAndUpdate(

@@ -30,6 +30,8 @@ export const addToCart = async (req, res, next) => {
   //  wishlist.products=wishlist.products.filter((i)=>i._id.toString()!==productId)
   //  await wishlist.save();
   // const remove=await cartDB.deleteOne({})
+
+  
     //find the carts for the user or create a new one
     let cart = await cartDB.findOne({ userId });
     if (!cart) {
@@ -137,6 +139,8 @@ export const removeCartItem = async (req, res, next) => {
       return next(
         errorHandler(STATUS_CODES.NOT_FOUND, "Item not found in the cart")
       );
+
+    
 
     cart.items = cart.items.filter((i) => i._id.toString() !== itemId);
     await cart.save();

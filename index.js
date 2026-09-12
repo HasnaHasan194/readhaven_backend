@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+dotenv.config()
 import mongoose from 'mongoose';
 import  express from 'express';
 import cors from 'cors';
@@ -8,7 +9,6 @@ import AdminRoute from './Routes/adminRouter.js';
 import morgan from 'morgan';
 import { STATUS_CODES } from './utils/constants.js';
 //import AdminRoute from './Routes/adminRouter.js';
-dotenv.config()
 
 const app=express();
 app.use(express.json({ limit: "50mb" }));

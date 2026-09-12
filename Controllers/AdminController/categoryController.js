@@ -124,6 +124,7 @@ export const editCategory = async (req, res) => {
         .status(STATUS_CODES.CONFLICT)
         .json({ message: "Category already exists." });
     }
+    
 
     const updateCategory = await CategoryDB.findByIdAndUpdate(id, {
       name,
