@@ -25,16 +25,12 @@ export const otpSender=async(email,otp,res, next)=>{
         text:`Your OTP code for signup is :${otp}`,
 
     };
-   
-    transporter.sendMail(mailOptions,(err)=>{
-        if(err){
-            console.log(err);
-            return next(errorHandler(STATUS_CODES. SERVER_ERROR,"failed to send OTP"))
-
-        }
-        
-        res.status(STATUS_CODES.SUCCESS).json({success:true,message:"OTP sent to your given email.please verify."});
-    });
+    try {
+        await transporter.sendMail(mailOptions);
+    } catch (err) {
+        console.log(err);
+        throw new Error("failed to send OTP");
+    }
 }
 
 
