@@ -46,23 +46,25 @@ export const addToCart = async (req, res, next) => {
     
 
     if (existingProduct) {
-      if (existingProduct.quantity < 5) {
-        //updates the quantity
-        const newQuantity = existingProduct.quantity + 1;
-        if (newQuantity > product.availableQuantity)
-          return next(
-            errorHandler(
-              STATUS_CODES.BAD_REQUEST,
-              "cannot add more than available stock"
-            )
-          );
-        existingProduct.quantity = newQuantity;
-      } else {
+      //updates the quantity
+      const newQuantity = existingProduct.quantity + 1;
+      if (newQuantity > product.availableQuantity)
         return next(
-          errorHandler(STATUS_CODES.BAD_REQUEST, "Cannot add more than 5")
+          errorHandler(
+            STATUS_CODES.BAD_REQUEST,
+            "cannot add more than available stock"
+          )
+        );
+      existingProduct.quantity = newQuantity;
+    } else {
+      if (product.availableQuantity <= 0) {
+        return next(
+          errorHandler(
+            STATUS_CODES.BAD_REQUEST,
+            "Product is out of stock"
+          )
         );
       }
-    } else {
       cart.items.push({
         product: productId,
         quantity: 1,
@@ -198,15 +200,7 @@ export const updateCartItemQuantity = async (req, res, next) => {
       return
     }
        
-    if (newQuantity > 5) {
-      next(
-        errorHandler(
-          STATUS_CODES.BAD_REQUEST,
-          "You can only buy a quantity of 5"
-        )
-      );
-      return
-    }
+        
     if (newQuantity > product.availableQuantity)
       return next(
         errorHandler(
